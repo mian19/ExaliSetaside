@@ -8,11 +8,29 @@ struct RecordsView: View {
     @State private var periodStart = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
     @State private var periodEnd = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
     @State private var showAddOperation = false
+    @State private var showStatistics = false
 
     private var filtered: [IncomeRecord] {
         appState.records.filter { record in
             statusFilter.matches(record: record) && matchesPeriod(record.date)
         }
+    }
+
+    private var totalAmount: Double {
+        filtered.reduce(0) { $0 + $1.amount }
+    }
+
+    private var statisticsEntries: [StatisticsEntry] {
+        filtered
+            .sorted { $0.date < $1.date }
+            .map { record in
+                StatisticsEntry(
+                    id: record.id,
+                    title: record.clientName.isEmpty ? String(localized: "orders.untitled") : record.clientName,
+                    subtitle: record.date.formatted(.dateTime.day().month(.abbreviated).year()),
+                    amount: record.amount
+                )
+            }
     }
 
     var body: some View {
@@ -74,24 +92,43 @@ struct RecordsView: View {
                 OperationEntrySheet()
                     .environmentObject(appState)
             }
+            .navigationDestination(isPresented: $showStatistics) {
+                StatisticsView(
+                    titleKey: "summary.screen.orders",
+                    entries: statisticsEntries,
+                    currencyCode: appState.profile.currencyCode
+                )
+            }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            Button {
-                showAddOperation = true
-            } label: {
-                Text("add.record.action")
-                    .font(.system(size: 16, weight: .bold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .foregroundStyle(Color.black)
-                    .contentShape(Rectangle())
+            if !showStatistics && !showAddOperation {
+                VStack(spacing: 8) {
+                    PeriodSummaryFooter(
+                        total: totalAmount,
+                        currencyCode: appState.profile.currencyCode,
+                        actionTitleKey: "summary.showStats"
+                    ) {
+                        showStatistics = true
+                    }
+
+                    Button {
+                        showAddOperation = true
+                    } label: {
+                        Text("add.record.action")
+                            .font(.system(size: 16, weight: .bold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .foregroundStyle(Color.black)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
+                .background(Theme.background)
             }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 14)
-            .padding(.top, 8)
-            .padding(.bottom, 8)
-            .background(Theme.background)
         }
         .onChange(of: periodStart) { newValue in
             periodStart = monthStart(newValue)
@@ -106,7 +143,10 @@ struct RecordsView: View {
             }
         }
         .onChange(of: showAddOperation) { isShown in
-            onAddScreenVisibilityChange(isShown)
+            onAddScreenVisibilityChange(isShown || showStatistics)
+        }
+        .onChange(of: showStatistics) { isShown in
+            onAddScreenVisibilityChange(isShown || showAddOperation)
         }
         .onAppear {
             onAddScreenVisibilityChange(false)

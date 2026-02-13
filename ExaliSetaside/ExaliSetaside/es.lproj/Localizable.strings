@@ -24,8 +24,8 @@
 "screen.taxes.title" = "Impuestos Pagados";
 
 "add.record.section" = "Agregar Registro de Trabajo";
-"add.record.client" = "Cliente";
-"add.record.client.placeholder" = "Nombre del cliente";
+"add.record.client" = "Cliente/Proyecto";
+"add.record.client.placeholder" = "Nombre del cliente/proyecto";
 "add.record.amount" = "Monto";
 "add.record.date" = "Fecha de trabajo";
 "add.record.paid" = "Ya pagado";
@@ -79,6 +79,17 @@
 "period.to" = "Hasta";
 "period.mode" = "Periodo";
 "tax.paidAt" = "Pagado el";
+"summary.total" = "Total:";
+"summary.showChart" = "Mostrar Grafico";
+"summary.hideChart" = "Ocultar Grafico";
+"summary.showStats" = "Mostrar Estadistica";
+"summary.screen.orders" = "Estadistica de Ingresos";
+"summary.screen.taxes" = "Estadistica de Impuestos";
+"summary.chart.payments" = "Todos los pagos del periodo elegido";
+"summary.legend" = "Leyenda";
+"summary.chart.orders" = "Ingresos por periodo";
+"summary.chart.taxes" = "Impuestos por periodo";
+"summary.chart.empty" = "Sin datos para el periodo elegido.";
 
 "reminder.tax.title" = "Recordatorio de impuesto";
 "reminder.tax.body %@" = "Paga %@ de impuestos.";
@@ -91,5 +102,6 @@
 "settings.taxRate" = "Impuesto por defecto (%)";
 "settings.extraRate" = "Reserva por defecto (%)";
 "settings.save" = "Guardar Ajustes";
+"settings.save.tax" = "Guardar Ajustes Fiscales";
 "settings.language.note.title" = "Idioma";
 "settings.language.note" = "La app soporta ingles y espanol segun el idioma del sistema.";

@@ -24,8 +24,8 @@
 "screen.taxes.title" = "Paid Taxes";
 
 "add.record.section" = "Add Work Record";
-"add.record.client" = "Client";
-"add.record.client.placeholder" = "Client name";
+"add.record.client" = "Client/Project";
+"add.record.client.placeholder" = "Client/Project name";
 "add.record.amount" = "Amount";
 "add.record.date" = "Work Date";
 "add.record.paid" = "Already paid";
@@ -79,6 +79,17 @@
 "period.to" = "To";
 "period.mode" = "Period";
 "tax.paidAt" = "Paid on";
+"summary.total" = "Total:";
+"summary.showChart" = "Show Chart";
+"summary.hideChart" = "Hide Chart";
+"summary.showStats" = "Show Statistics";
+"summary.screen.orders" = "Income Statistics";
+"summary.screen.taxes" = "Tax Statistics";
+"summary.chart.payments" = "All payments in selected period";
+"summary.legend" = "Legend";
+"summary.chart.orders" = "Income by period";
+"summary.chart.taxes" = "Taxes by period";
+"summary.chart.empty" = "No data for selected period.";
 
 "reminder.tax.title" = "Tax payment reminder";
 "reminder.tax.body %@" = "Pay %@ for taxes.";
@@ -91,5 +102,6 @@
 "settings.taxRate" = "Default tax rate (%)";
 "settings.extraRate" = "Default reserve (%)";
 "settings.save" = "Save Settings";
+"settings.save.tax" = "Save Tax Settings";
 "settings.language.note.title" = "Language";
 "settings.language.note" = "App supports English and Spanish based on system language.";

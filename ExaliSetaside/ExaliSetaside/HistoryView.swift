@@ -2,16 +2,35 @@ import SwiftUI
 
 struct HistoryView: View {
     @EnvironmentObject private var appState: AppState
+    var onScreenVisibilityChange: (Bool) -> Void = { _ in }
 
     @State private var statusFilter: TaxStatusFilter = .all
     @State private var periodMode: PeriodMode = .thisMonth
     @State private var periodStart = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
     @State private var periodEnd = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
+    @State private var showStatistics = false
 
     private var filtered: [TaxPaymentRecord] {
         appState.taxRecords.filter { item in
             statusFilter.matches(item: item) && matchesPeriod(item.periodStart)
         }
+    }
+
+    private var totalAmount: Double {
+        filtered.reduce(0) { $0 + $1.amountDue }
+    }
+
+    private var statisticsEntries: [StatisticsEntry] {
+        filtered
+            .sorted { $0.periodStart < $1.periodStart }
+            .map { item in
+                StatisticsEntry(
+                    id: item.id,
+                    title: item.periodLabel,
+                    subtitle: item.isPaid ? String(localized: "tax.filter.paid") : String(localized: "tax.filter.unpaid"),
+                    amount: item.amountDue
+                )
+            }
     }
 
     var body: some View {
@@ -67,6 +86,28 @@ struct HistoryView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(Theme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .navigationDestination(isPresented: $showStatistics) {
+                StatisticsView(
+                    titleKey: "summary.screen.taxes",
+                    entries: statisticsEntries,
+                    currencyCode: appState.profile.currencyCode
+                )
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !showStatistics {
+                PeriodSummaryFooter(
+                    total: totalAmount,
+                    currencyCode: appState.profile.currencyCode,
+                    actionTitleKey: "summary.showStats"
+                ) {
+                    showStatistics = true
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
+                .background(Theme.background)
+            }
         }
         .onChange(of: periodStart) { newValue in
             periodStart = monthStart(newValue)
@@ -79,6 +120,15 @@ struct HistoryView: View {
             if periodEnd < periodStart {
                 periodStart = periodEnd
             }
+        }
+        .onChange(of: showStatistics) { isShown in
+            onScreenVisibilityChange(isShown)
+        }
+        .onAppear {
+            onScreenVisibilityChange(false)
+        }
+        .onDisappear {
+            onScreenVisibilityChange(false)
         }
     }
 

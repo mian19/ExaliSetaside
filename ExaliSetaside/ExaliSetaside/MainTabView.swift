@@ -17,7 +17,9 @@ struct MainTabView: View {
                         hideTabBar = isVisible
                     }
                 case .taxes:
-                    HistoryView()
+                    HistoryView { isVisible in
+                        hideTabBar = isVisible
+                    }
                 case .settings:
                     SettingsView()
                 }
@@ -30,7 +32,7 @@ struct MainTabView: View {
             }
         }
         .onChange(of: selectedTab) { newTab in
-            if newTab != .orders {
+            if newTab != .orders && newTab != .taxes {
                 hideTabBar = false
             }
         }

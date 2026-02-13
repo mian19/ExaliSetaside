@@ -106,7 +106,7 @@ final class AppState: ObservableObject {
         content.sound = .default
 
         var date = DateComponents()
-        date.day = min(max(day, 1), 28)
+        date.day = min(max(day, 1), 31)
         date.hour = min(max(hour, 0), 23)
         date.minute = min(max(minute, 0), 59)
 

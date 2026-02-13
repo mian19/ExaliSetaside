@@ -3,7 +3,12 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var appState: AppState
 
-    private let currencies = ["USD", "EUR", "GBP", "MXN"]
+    private let currencies = [
+        "USD", "EUR", "GBP", "JPY", "CNY", "CAD", "AUD", "NZD",
+        "CHF", "SEK", "NOK", "DKK", "PLN", "CZK", "HUF", "RON",
+        "TRY", "AED", "SAR", "ILS", "INR", "SGD", "HKD", "KRW",
+        "ZAR", "BRL", "MXN", "ARS", "CLP", "COP"
+    ]
 
     @State private var defaultTaxRate = ""
     @State private var defaultReserveRate = ""
@@ -31,10 +36,10 @@ struct SettingsView: View {
                         defaultsCard
                         reminderCard
                         notesCard
-                        saveButton
                     }
                     .padding(.horizontal, 14)
                     .padding(.top, 6)
+                    .padding(.bottom, 120)
                 }
                 .scrollDismissesKeyboard(.interactively)
                 .onTapGesture {
@@ -55,6 +60,12 @@ struct SettingsView: View {
                 if savedTime > 0 {
                     reminderTime = Date(timeIntervalSince1970: savedTime)
                 }
+            }
+            .onChange(of: appState.profile.taxationMode) { _ in
+                appState.saveProfile()
+            }
+            .onChange(of: appState.profile.currencyCode) { _ in
+                appState.saveProfile()
             }
         }
     }
@@ -84,7 +95,9 @@ struct SettingsView: View {
                         Text(currency).tag(currency)
                     }
                 }
-                .pickerStyle(.segmented)
+                .pickerStyle(.menu)
+                .tint(Theme.accent)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(16)
@@ -97,6 +110,15 @@ struct SettingsView: View {
 
             settingsField(title: "settings.taxRate", text: $defaultTaxRate, field: .taxRate)
             settingsField(title: "settings.extraRate", text: $defaultReserveRate, field: .reserveRate)
+
+            Button("settings.save.tax") {
+                saveTaxDefaults()
+            }
+            .font(.system(size: 15, weight: .bold))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .foregroundStyle(Color.black)
         }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -118,14 +140,20 @@ struct SettingsView: View {
         VStack(spacing: 12) {
             sectionHeader("tax.reminder.title")
 
-            Picker("tax.reminder.day", selection: $reminderDay) {
-                ForEach(1...28, id: \.self) { day in
-                    Text("\(day)").tag(day)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("tax.reminder.day")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.textSecondary)
+
+                Picker("", selection: $reminderDay) {
+                    ForEach(1...31, id: \.self) { day in
+                        Text("\(day)").tag(day)
+                    }
                 }
+                .pickerStyle(.menu)
+                .tint(Theme.accent)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .pickerStyle(.menu)
-            .tint(Theme.accent)
-            .frame(maxWidth: .infinity, alignment: .leading)
 
             DatePicker("tax.reminder.time", selection: $reminderTime, displayedComponents: .hourAndMinute)
                 .datePickerStyle(.compact)
@@ -155,21 +183,6 @@ struct SettingsView: View {
         }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-    }
-
-    private var saveButton: some View {
-        Button("settings.save") {
-            appState.profile.defaultTaxRate = max(0, parse(defaultTaxRate) / 100)
-            appState.profile.defaultReserveExtraRate = max(0, parse(defaultReserveRate) / 100)
-            appState.saveProfile()
-            focusedField = nil
-            hideKeyboard()
-        }
-        .font(.system(size: 16, weight: .bold))
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 15)
-        .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .foregroundStyle(Color.black)
     }
 
     private func sectionHeader(_ title: String) -> some View {
@@ -202,6 +215,14 @@ struct SettingsView: View {
 
     private func parse(_ value: String) -> Double {
         Double(value.replacingOccurrences(of: ",", with: ".")) ?? 0
+    }
+
+    private func saveTaxDefaults() {
+        appState.profile.defaultTaxRate = max(0, parse(defaultTaxRate) / 100)
+        appState.profile.defaultReserveExtraRate = max(0, parse(defaultReserveRate) / 100)
+        appState.saveProfile()
+        focusedField = nil
+        hideKeyboard()
     }
 
     private func stripTrailingZeros(_ number: Double) -> String {
