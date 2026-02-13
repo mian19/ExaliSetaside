@@ -34,27 +34,33 @@ final class AppState: ObservableObject {
         } else {
             taxRecords = []
         }
+
+        recomputeTaxRecordsFromPaidIncome()
     }
 
     func saveProfile() {
         guard let data = try? JSONEncoder().encode(profile) else { return }
         UserDefaults.standard.set(data, forKey: profileKey)
+        recomputeTaxRecordsFromPaidIncome()
     }
 
     func add(record: IncomeRecord) {
         records.insert(record, at: 0)
         persistRecords()
+        recomputeTaxRecordsFromPaidIncome()
     }
 
     func removeRecords(at offsets: IndexSet) {
         records.remove(atOffsets: offsets)
         persistRecords()
+        recomputeTaxRecordsFromPaidIncome()
     }
 
     func toggleRecordPaid(_ id: UUID) {
         guard let idx = records.firstIndex(where: { $0.id == id }) else { return }
         records[idx].isPaid.toggle()
         persistRecords()
+        recomputeTaxRecordsFromPaidIncome()
     }
 
     func addTaxRecord(_ taxRecord: TaxPaymentRecord) {
@@ -66,6 +72,13 @@ final class AppState: ObservableObject {
         guard let idx = taxRecords.firstIndex(where: { $0.id == id }) else { return }
         taxRecords[idx].isPaid = true
         taxRecords[idx].paidAt = Date()
+        persistTaxRecords()
+    }
+
+    func toggleTaxPaidStatus(_ id: UUID) {
+        guard let idx = taxRecords.firstIndex(where: { $0.id == id }) else { return }
+        taxRecords[idx].isPaid.toggle()
+        taxRecords[idx].paidAt = taxRecords[idx].isPaid ? Date() : nil
         persistTaxRecords()
     }
 
@@ -115,5 +128,50 @@ final class AppState: ObservableObject {
     private func persistTaxRecords() {
         guard let data = try? JSONEncoder().encode(taxRecords) else { return }
         UserDefaults.standard.set(data, forKey: taxRecordsKey)
+    }
+
+    private func recomputeTaxRecordsFromPaidIncome() {
+        let calendar = Calendar.current
+        let paidRecords = records.filter { $0.isPaid }
+
+        let existingByMonth: [Date: TaxPaymentRecord] = taxRecords.reduce(into: [:]) { partial, item in
+            let key = monthStart(item.periodStart, calendar: calendar)
+            let current = partial[key]
+            if current == nil || item.createdAt > (current?.createdAt ?? .distantPast) {
+                partial[key] = item
+            }
+        }
+
+        let groupedByMonth = Dictionary(grouping: paidRecords) { monthStart($0.date, calendar: calendar) }
+        let generated = groupedByMonth.keys.sorted(by: >).map { start -> TaxPaymentRecord in
+            let monthRecords = groupedByMonth[start] ?? []
+            let gross = monthRecords.reduce(0) { $0 + $1.amount }
+            let result = TaxCalculator.estimate(
+                grossIncome: gross,
+                deductions: 0,
+                taxRate: profile.defaultTaxRate,
+                extraReserveRate: profile.defaultReserveExtraRate
+            )
+            let periodLabel = DateFormatter.localizedString(from: start, dateStyle: .medium, timeStyle: .none)
+            let existing = existingByMonth[start]
+
+            return TaxPaymentRecord(
+                id: existing?.id ?? UUID(),
+                createdAt: existing?.createdAt ?? Date(),
+                periodStart: start,
+                periodLabel: periodLabel,
+                taxableIncome: result.taxableIncome,
+                amountDue: result.totalSetAside,
+                isPaid: existing?.isPaid ?? false,
+                paidAt: existing?.paidAt
+            )
+        }
+
+        taxRecords = generated
+        persistTaxRecords()
+    }
+
+    private func monthStart(_ value: Date, calendar: Calendar) -> Date {
+        calendar.date(from: calendar.dateComponents([.year, .month], from: value)) ?? value
     }
 }

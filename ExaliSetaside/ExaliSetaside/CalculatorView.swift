@@ -2,19 +2,12 @@ import SwiftUI
 
 struct CalculatorView: View {
     @EnvironmentObject private var appState: AppState
-    private let debugLayoutColors = false
-
-    @State private var clientName = ""
-    @State private var amountText = ""
-    @State private var recordDate = Date()
-    @State private var isPaid = true
 
     @State private var deductionsText = ""
     @State private var taxRateText = "25"
     @State private var socialRateText = "5"
     @State private var extraRateText = "3"
-
-    @FocusState private var amountFocused: Bool
+    @State private var showAddOperation = false
 
     private var currentMonthRecords: [IncomeRecord] {
         let calendar = Calendar.current
@@ -54,9 +47,8 @@ struct CalculatorView: View {
 
                 ScrollView {
                     VStack(spacing: 14) {
-                        addRecordCard
+                        addOperationCard
                         monthlySummaryCard
-                        saveTaxCard
                     }
                     .padding(.horizontal, 14)
                     .padding(.top, 6)
@@ -71,59 +63,37 @@ struct CalculatorView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(Theme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
             .onAppear {
                 taxRateText = strip(appState.profile.defaultTaxRate * 100)
                 extraRateText = strip(appState.profile.defaultReserveExtraRate * 100)
             }
+            .sheet(isPresented: $showAddOperation) {
+                AddOperationSheet { record in
+                    appState.add(record: record)
+                }
+            }
         }
     }
 
-    private var addRecordCard: some View {
+    private var addOperationCard: some View {
         VStack(spacing: 10) {
             sectionTitle("add.record.section")
 
-            textInputField("add.record.client", text: $clientName, placeholderKey: "add.record.client.placeholder")
-            amountField
-
-            DatePicker("add.record.date", selection: $recordDate, displayedComponents: [.date])
-                .datePickerStyle(.compact)
-                .tint(Theme.accent)
-                .foregroundStyle(Theme.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Toggle("add.record.paid", isOn: $isPaid)
-                .tint(Theme.accent)
-                .foregroundStyle(Theme.textPrimary)
-
-            Button("add.record.action") {
-                let amount = max(0, Double(amountText.replacingOccurrences(of: ",", with: ".")) ?? 0)
-                guard amount > 0 else { return }
-                let record = IncomeRecord(
-                    date: recordDate,
-                    clientName: clientName.trimmingCharacters(in: .whitespacesAndNewlines),
-                    amount: amount,
-                    isPaid: isPaid
-                )
-                appState.add(record: record)
-                clientName = ""
-                amountText = ""
-                isPaid = true
+            Button {
+                showAddOperation = true
+            } label: {
+                Text("add.record.action")
+                    .font(.system(size: 15, weight: .bold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .foregroundStyle(Color.black)
+                    .contentShape(Rectangle())
             }
-            .font(.system(size: 15, weight: .bold))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .foregroundStyle(Color.black)
+            .buttonStyle(.plain)
         }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay {
-            if debugLayoutColors {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.orange, lineWidth: 2)
-            }
-        }
     }
 
     private var monthlySummaryCard: some View {
@@ -134,6 +104,10 @@ struct CalculatorView: View {
             statRow("add.calc.gross", money(grossIncome))
 
             numericInputField("add.calc.deductions", text: $deductionsText)
+            Text("add.calc.deductions.hint")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.textSecondary.opacity(0.9))
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 8) {
                 percentField("field.taxRate", $taxRateText)
@@ -146,62 +120,6 @@ struct CalculatorView: View {
         }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay {
-            if debugLayoutColors {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.purple, lineWidth: 2)
-            }
-        }
-    }
-
-    private var saveTaxCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("add.tax.section")
-            Text("add.tax.hint")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Theme.textSecondary)
-
-            Button("add.tax.action") {
-                let monthStart = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
-                let periodLabel = DateFormatter.localizedString(from: monthStart, dateStyle: .medium, timeStyle: .none)
-                let tax = TaxPaymentRecord(
-                    periodStart: monthStart,
-                    periodLabel: periodLabel,
-                    taxableIncome: result.taxableIncome,
-                    amountDue: result.totalSetAside
-                )
-                appState.addTaxRecord(tax)
-            }
-            .disabled(result.totalSetAside <= 0)
-            .font(.system(size: 15, weight: .bold))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Theme.cardMuted, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .foregroundStyle(Theme.textPrimary)
-        }
-        .padding(16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay {
-            if debugLayoutColors {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.yellow, lineWidth: 2)
-            }
-        }
-    }
-
-    private func textInputField(_ key: String, text: Binding<String>, placeholderKey: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(LocalizedStringKey(key))
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-            TextField("", text: text, prompt: Text(LocalizedStringKey(placeholderKey)).foregroundColor(.white.opacity(0.65)))
-                .textInputAutocapitalization(.words)
-                .keyboardType(.default)
-                .autocorrectionDisabled()
-                .foregroundStyle(Theme.textPrimary)
-                .padding(12)
-                .background(Theme.cardMuted, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
     }
 
     private func numericInputField(_ key: String, text: Binding<String>) -> some View {
@@ -217,25 +135,14 @@ struct CalculatorView: View {
         }
     }
 
-    private var amountField: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("add.record.amount")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-            TextField("", text: $amountText, prompt: Text("0").foregroundColor(.white.opacity(0.65)))
-                .keyboardType(.decimalPad)
-                .focused($amountFocused)
-                .foregroundStyle(Theme.textPrimary)
-                .padding(12)
-                .background(Theme.cardMuted, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
-    }
-
     private func percentField(_ key: String, _ text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(LocalizedStringKey(key))
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, minHeight: 40, maxHeight: 40, alignment: .topLeading)
             HStack {
                 TextField("", text: text, prompt: Text("0").foregroundColor(.white.opacity(0.65)))
                     .keyboardType(.decimalPad)
@@ -276,5 +183,125 @@ struct CalculatorView: View {
     private func strip(_ value: Double) -> String {
         let str = String(format: "%.1f", value)
         return str.hasSuffix(".0") ? String(str.dropLast(2)) : str
+    }
+}
+
+private struct AddOperationSheet: View {
+    let onSave: (IncomeRecord) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var clientName = ""
+    @State private var amountText = ""
+    @State private var recordDate = Date()
+    @State private var isPaid = true
+
+    @FocusState private var amountFocused: Bool
+
+    private var amount: Double {
+        max(0, Double(amountText.replacingOccurrences(of: ",", with: ".")) ?? 0)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Theme.background.ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 14) {
+                        VStack(spacing: 10) {
+                            textInputField("add.record.client", text: $clientName, placeholderKey: "add.record.client.placeholder")
+                            amountField
+
+                            DatePicker("add.record.date", selection: $recordDate, displayedComponents: [.date])
+                                .datePickerStyle(.compact)
+                                .tint(Theme.accent)
+                                .foregroundStyle(Theme.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            Toggle("add.record.paid", isOn: $isPaid)
+                                .tint(Theme.accent)
+                                .foregroundStyle(Theme.textPrimary)
+                        }
+                        .padding(16)
+                        .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.top, 8)
+                    .padding(.bottom, 18)
+                    .frame(maxWidth: .infinity)
+                }
+                .scrollDismissesKeyboard(.interactively)
+                .onTapGesture { hideKeyboard() }
+            }
+            .navigationTitle(Text("add.record.section"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                }
+            }
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(Theme.background, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Button {
+                    let record = IncomeRecord(
+                        date: recordDate,
+                        clientName: clientName.trimmingCharacters(in: .whitespacesAndNewlines),
+                        amount: amount,
+                        isPaid: isPaid
+                    )
+                    onSave(record)
+                    dismiss()
+                } label: {
+                    Text("add.record.action")
+                        .font(.system(size: 16, weight: .bold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .foregroundStyle(Color.black)
+                        .contentShape(Rectangle())
+                }
+                .disabled(amount <= 0)
+                .opacity(amount > 0 ? 1 : 0.55)
+                .buttonStyle(.plain)
+                .padding(.horizontal, 14)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
+                .background(Theme.background)
+            }
+        }
+    }
+
+    private func textInputField(_ key: String, text: Binding<String>, placeholderKey: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(LocalizedStringKey(key))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.textSecondary)
+            TextField("", text: text, prompt: Text(LocalizedStringKey(placeholderKey)).foregroundColor(.white.opacity(0.65)))
+                .textInputAutocapitalization(.words)
+                .keyboardType(.default)
+                .autocorrectionDisabled()
+                .foregroundStyle(Theme.textPrimary)
+                .padding(12)
+                .background(Theme.cardMuted, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+    }
+
+    private var amountField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("add.record.amount")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.textSecondary)
+            TextField("", text: $amountText, prompt: Text("0").foregroundColor(.white.opacity(0.65)))
+                .keyboardType(.decimalPad)
+                .focused($amountFocused)
+                .foregroundStyle(Theme.textPrimary)
+                .padding(12)
+                .background(Theme.cardMuted, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
     }
 }

@@ -7,11 +7,17 @@ struct SettingsView: View {
 
     @State private var defaultTaxRate = ""
     @State private var defaultReserveRate = ""
+    @State private var reminderDay = 10
+    @State private var reminderTime = Date()
 
     @FocusState private var focusedField: Field?
 
     private enum Field: Hashable {
         case taxRate, reserveRate
+    }
+
+    private var nextAmount: Double {
+        appState.taxRecords.first(where: { !$0.isPaid })?.amountDue ?? 0
     }
 
     var body: some View {
@@ -23,6 +29,7 @@ struct SettingsView: View {
                     VStack(spacing: 14) {
                         profileCard
                         defaultsCard
+                        reminderCard
                         notesCard
                         saveButton
                     }
@@ -39,10 +46,15 @@ struct SettingsView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(Theme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .ignoresSafeArea(.keyboard, edges: .bottom)
             .onAppear {
                 defaultTaxRate = stripTrailingZeros(appState.profile.defaultTaxRate * 100)
                 defaultReserveRate = stripTrailingZeros(appState.profile.defaultReserveExtraRate * 100)
+                reminderDay = UserDefaults.standard.integer(forKey: "reminderDay")
+                if reminderDay == 0 { reminderDay = 10 }
+                let savedTime = UserDefaults.standard.double(forKey: "reminderTime")
+                if savedTime > 0 {
+                    reminderTime = Date(timeIntervalSince1970: savedTime)
+                }
             }
         }
     }
@@ -98,6 +110,49 @@ struct SettingsView: View {
                 .foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private var reminderCard: some View {
+        VStack(spacing: 12) {
+            sectionHeader("tax.reminder.title")
+
+            Picker("tax.reminder.day", selection: $reminderDay) {
+                ForEach(1...28, id: \.self) { day in
+                    Text("\(day)").tag(day)
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(Theme.accent)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            DatePicker("tax.reminder.time", selection: $reminderTime, displayedComponents: .hourAndMinute)
+                .datePickerStyle(.compact)
+                .tint(Theme.accent)
+                .foregroundStyle(Theme.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button("tax.reminder.action") {
+                let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+                UserDefaults.standard.set(reminderDay, forKey: "reminderDay")
+                UserDefaults.standard.set(reminderTime.timeIntervalSince1970, forKey: "reminderTime")
+                Task {
+                    await appState.scheduleTaxReminder(
+                        amount: nextAmount,
+                        currencyCode: appState.profile.currencyCode,
+                        day: reminderDay,
+                        hour: components.hour ?? 9,
+                        minute: components.minute ?? 0
+                    )
+                }
+            }
+            .font(.system(size: 15, weight: .bold))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .foregroundStyle(Color.black)
+        }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }

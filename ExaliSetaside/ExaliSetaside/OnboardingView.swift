@@ -42,7 +42,7 @@ struct OnboardingView: View {
                     .tag(index)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
+            .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(maxHeight: 460)
 
             VStack(alignment: .leading, spacing: 10) {
@@ -90,4 +90,3 @@ private struct OnboardingPage {
     let title: String
     let subtitle: String
 }
-

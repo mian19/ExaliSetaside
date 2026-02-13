@@ -14,11 +14,12 @@
 "mode.selfEmployed" = "Autonomo";
 "mode.contractor" = "Contratista";
 
-"tab.add" = "Agregar";
+"tab.add" = "Calculo";
 "tab.orders" = "Pedidos";
 "tab.taxes" = "Impuestos";
+"tab.settings" = "Ajustes";
 
-"screen.add.title" = "Agregar y Calcular";
+"screen.add.title" = "Calculo";
 "screen.orders.title" = "Pedidos y Cobros";
 "screen.taxes.title" = "Impuestos Pagados";
 
@@ -34,10 +35,12 @@
 "add.calc.ordersCount" = "Registros del mes";
 "add.calc.gross" = "Ingreso bruto";
 "add.calc.deductions" = "Deducciones";
+"add.calc.deductions.hint" = "Ingresa gastos deducibles del mes actual (si aplica).";
 
-"add.tax.section" = "Guardar Registro Fiscal";
-"add.tax.hint" = "Guarda esta estimacion en historial de impuestos.";
-"add.tax.action" = "Guardar Impuesto";
+"add.tax.section" = "Guardar Resumen Mensual";
+"add.tax.hint" = "Guarda esta estimacion mensual en historial para planificar y registrar el pago.";
+"add.tax.action" = "Guardar Resumen";
+"add.tax.disabled.hint" = "Agrega al menos un registro este mes para guardar un resumen.";
 
 "field.taxRate" = "Tasa de Impuesto";
 "field.socialRate" = "Aportes sociales";
@@ -52,6 +55,8 @@
 "orders.untitled" = "Cliente sin nombre";
 "orders.mark.paid" = "Marcar pagado";
 "orders.mark.unpaid" = "Marcar no pagado";
+"orders.status.paid" = "Pagado";
+"orders.status.unpaid" = "No pagado";
 
 "tax.reminder.title" = "Recordatorio de Impuestos";
 "tax.reminder.day" = "Dia de recordatorio";
@@ -61,6 +66,18 @@
 "tax.paid.title" = "Impuestos Pagados";
 "tax.empty" = "Sin registros.";
 "tax.markPaid" = "Marcar como pagado";
+"tax.markUnpaid" = "Marcar como no pagado";
+"tax.filter.all" = "Todos";
+"tax.filter.paid" = "Pagados";
+"tax.filter.unpaid" = "No pagados";
+"period.thisMonth" = "Este Mes";
+"period.last3Months" = "Ultimos 3 Meses";
+"period.thisYear" = "Este Ano";
+"period.allTime" = "Todo";
+"period.selected" = "Periodo Elegido";
+"period.from" = "Desde";
+"period.to" = "Hasta";
+"period.mode" = "Periodo";
 "tax.paidAt" = "Pagado el";
 
 "reminder.tax.title" = "Recordatorio de impuesto";

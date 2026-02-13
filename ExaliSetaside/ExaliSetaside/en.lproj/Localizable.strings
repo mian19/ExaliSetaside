@@ -14,11 +14,12 @@
 "mode.selfEmployed" = "Self-Employed";
 "mode.contractor" = "Contractor";
 
-"tab.add" = "Add";
+"tab.add" = "Calculate";
 "tab.orders" = "Orders";
 "tab.taxes" = "Taxes";
+"tab.settings" = "Settings";
 
-"screen.add.title" = "Add & Calculate";
+"screen.add.title" = "Calculate";
 "screen.orders.title" = "Orders & Payouts";
 "screen.taxes.title" = "Paid Taxes";
 
@@ -34,10 +35,12 @@
 "add.calc.ordersCount" = "Records in month";
 "add.calc.gross" = "Gross income";
 "add.calc.deductions" = "Deductions";
+"add.calc.deductions.hint" = "Enter deductible expenses for the current month (if any).";
 
-"add.tax.section" = "Save Tax Entry";
-"add.tax.hint" = "Save this estimate to tax payment history.";
-"add.tax.action" = "Save Tax Due";
+"add.tax.section" = "Save Monthly Snapshot";
+"add.tax.hint" = "Store this month estimate in tax history for planning and payment tracking.";
+"add.tax.action" = "Save Snapshot";
+"add.tax.disabled.hint" = "Add at least one record this month to save a snapshot.";
 
 "field.taxRate" = "Tax Rate";
 "field.socialRate" = "Social Contributions";
@@ -52,6 +55,8 @@
 "orders.untitled" = "Untitled Client";
 "orders.mark.paid" = "Mark paid";
 "orders.mark.unpaid" = "Mark unpaid";
+"orders.status.paid" = "Paid";
+"orders.status.unpaid" = "Unpaid";
 
 "tax.reminder.title" = "Tax Reminder";
 "tax.reminder.day" = "Reminder day";
@@ -61,6 +66,18 @@
 "tax.paid.title" = "Paid Taxes";
 "tax.empty" = "No records.";
 "tax.markPaid" = "Mark as paid";
+"tax.markUnpaid" = "Mark as unpaid";
+"tax.filter.all" = "All";
+"tax.filter.paid" = "Paid";
+"tax.filter.unpaid" = "Unpaid";
+"period.thisMonth" = "This Month";
+"period.last3Months" = "Last 3 Months";
+"period.thisYear" = "This Year";
+"period.allTime" = "All Time";
+"period.selected" = "Selected Period";
+"period.from" = "From";
+"period.to" = "To";
+"period.mode" = "Period";
 "tax.paidAt" = "Paid on";
 
 "reminder.tax.title" = "Tax payment reminder";

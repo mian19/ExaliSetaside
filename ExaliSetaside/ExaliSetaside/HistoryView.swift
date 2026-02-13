@@ -3,19 +3,15 @@ import SwiftUI
 struct HistoryView: View {
     @EnvironmentObject private var appState: AppState
 
-    @State private var reminderDay = 10
-    @State private var reminderTime = Date()
+    @State private var statusFilter: TaxStatusFilter = .all
+    @State private var periodMode: PeriodMode = .thisMonth
+    @State private var periodStart = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
+    @State private var periodEnd = Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: Date())) ?? Date()
 
-    private var unpaidTaxes: [TaxPaymentRecord] {
-        appState.taxRecords.filter { !$0.isPaid }
-    }
-
-    private var paidTaxes: [TaxPaymentRecord] {
-        appState.taxRecords.filter { $0.isPaid }
-    }
-
-    private var nextAmount: Double {
-        unpaidTaxes.first?.amountDue ?? 0
+    private var filtered: [TaxPaymentRecord] {
+        appState.taxRecords.filter { item in
+            statusFilter.matches(item: item) && matchesPeriod(item.periodStart)
+        }
     }
 
     var body: some View {
@@ -23,17 +19,47 @@ struct HistoryView: View {
             ZStack {
                 Theme.background.ignoresSafeArea()
 
-                GeometryReader { proxy in
-                    ScrollView {
-                        VStack(spacing: 14) {
-                            reminderCard
-                            sectionCard(title: "tax.unpaid.title", list: unpaidTaxes, canMarkPaid: true)
-                            sectionCard(title: "tax.paid.title", list: paidTaxes, canMarkPaid: false)
+                VStack(spacing: 10) {
+                    Picker("", selection: $statusFilter) {
+                        Text("tax.filter.all").tag(TaxStatusFilter.all)
+                        Text("tax.filter.unpaid").tag(TaxStatusFilter.unpaid)
+                        Text("tax.filter.paid").tag(TaxStatusFilter.paid)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 14)
+
+                    HStack(spacing: 8) {
+                        Picker("period.mode", selection: $periodMode) {
+                            Text("period.thisMonth").tag(PeriodMode.thisMonth)
+                            Text("period.selected").tag(PeriodMode.selected)
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: proxy.size.height, alignment: .top)
-                        .padding(.horizontal, 14)
-                        .padding(.top, 6)
+                        .pickerStyle(.menu)
+                        .tint(Theme.accent)
+
+                        if periodMode == .selected {
+                            MonthYearPicker(titleKey: "period.from", selection: $periodStart)
+
+                            MonthYearPicker(titleKey: "period.to", selection: $periodEnd)
+                        }
+                    }
+                    .padding(.horizontal, 14)
+
+                    if filtered.isEmpty {
+                        Text("tax.empty")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Theme.textSecondary)
+                            .padding(.top, 40)
+                        Spacer()
+                    } else {
+                        List {
+                            ForEach(filtered) { item in
+                                taxRow(item)
+                                    .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
+                                    .listRowBackground(Theme.background)
+                            }
+                        }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
                     }
                 }
             }
@@ -42,101 +68,102 @@ struct HistoryView: View {
             .toolbarBackground(Theme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
         }
-    }
-
-    private var reminderCard: some View {
-        VStack(spacing: 10) {
-            sectionTitle("tax.reminder.title")
-
-            Picker("tax.reminder.day", selection: $reminderDay) {
-                ForEach(1...28, id: \.self) { day in
-                    Text("\(day)").tag(day)
-                }
+        .onChange(of: periodStart) { newValue in
+            periodStart = monthStart(newValue)
+            if periodEnd < periodStart {
+                periodEnd = periodStart
             }
-            .pickerStyle(.menu)
-            .tint(Theme.accent)
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            DatePicker("tax.reminder.time", selection: $reminderTime, displayedComponents: .hourAndMinute)
-                .datePickerStyle(.compact)
-                .tint(Theme.accent)
-                .foregroundStyle(Theme.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Button("tax.reminder.action") {
-                let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
-                Task {
-                    await appState.scheduleTaxReminder(
-                        amount: nextAmount,
-                        currencyCode: appState.profile.currencyCode,
-                        day: reminderDay,
-                        hour: components.hour ?? 9,
-                        minute: components.minute ?? 0
-                    )
-                }
-            }
-            .font(.system(size: 15, weight: .bold))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .foregroundStyle(Color.black)
         }
-        .padding(16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .onChange(of: periodEnd) { newValue in
+            periodEnd = monthStart(newValue)
+            if periodEnd < periodStart {
+                periodStart = periodEnd
+            }
+        }
     }
 
-    private func sectionCard(title: String, list: [TaxPaymentRecord], canMarkPaid: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionTitle(title)
-
-            if list.isEmpty {
-                Text("tax.empty")
-                    .font(.system(size: 13, weight: .medium))
+    private func taxRow(_ item: TaxPaymentRecord) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(item.periodLabel)
                     .foregroundStyle(Theme.textSecondary)
-            } else {
-                ForEach(list) { item in
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text(item.periodLabel)
-                                .foregroundStyle(Theme.textSecondary)
-                            Spacer()
-                            Text(money(item.amountDue))
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
-                                .foregroundStyle(Theme.accent)
-                        }
+                Spacer()
+                Text(money(item.amountDue))
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.accent)
+            }
 
-                        if canMarkPaid {
-                            Button("tax.markPaid") {
-                                appState.markTaxAsPaid(item.id)
-                            }
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(Theme.success)
-                        } else if let paidAt = item.paidAt {
-                            Text("\(String(localized: "tax.paidAt")) \(paidAt.formatted(.dateTime.day().month().year()))")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                    }
-                    .padding(12)
-                    .background(Theme.cardMuted, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            HStack {
+                Text(item.isPaid ? "tax.filter.paid" : "tax.filter.unpaid")
+                    .font(.system(size: 11, weight: .bold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        (item.isPaid ? Theme.success : Theme.warning).opacity(0.2),
+                        in: Capsule(style: .continuous)
+                    )
+                    .foregroundStyle(item.isPaid ? Theme.success : Theme.warning)
+
+                Spacer()
+
+                Button(item.isPaid ? "tax.markUnpaid" : "tax.markPaid") {
+                    appState.toggleTaxPaidStatus(item.id)
                 }
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(item.isPaid ? Theme.warning : Theme.success)
+            }
+
+            if let paidAt = item.paidAt, item.isPaid {
+                Text("\(String(localized: "tax.paidAt")) \(paidAt.formatted(.dateTime.day().month().year()))")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.textSecondary)
             }
         }
-        .padding(16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-    }
-
-    private func sectionTitle(_ key: String) -> some View {
-        HStack {
-            Text(LocalizedStringKey(key))
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.textPrimary)
-            Spacer()
-        }
+        .padding(12)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private func money(_ amount: Double) -> String {
         let formatter = FormatterFactory.currency(code: appState.profile.currencyCode)
         return formatter.string(from: NSNumber(value: amount)) ?? "0"
     }
+
+    private func matchesPeriod(_ date: Date) -> Bool {
+        let calendar = Calendar.current
+        switch periodMode {
+        case .thisMonth:
+            return calendar.isDate(date, equalTo: Date(), toGranularity: .month)
+        case .selected:
+            let start = monthStart(periodStart)
+            let end = monthStart(periodEnd)
+            guard let endExclusive = calendar.date(byAdding: .month, value: 1, to: end) else { return true }
+            return date >= start && date < endExclusive
+        }
+    }
+
+    private func monthStart(_ value: Date) -> Date {
+        Calendar.current.date(from: Calendar.current.dateComponents([.year, .month], from: value)) ?? value
+    }
+}
+
+private enum TaxStatusFilter: Hashable {
+    case all
+    case paid
+    case unpaid
+
+    func matches(item: TaxPaymentRecord) -> Bool {
+        switch self {
+        case .all:
+            return true
+        case .paid:
+            return item.isPaid
+        case .unpaid:
+            return !item.isPaid
+        }
+    }
+}
+
+private enum PeriodMode: Hashable {
+    case thisMonth
+    case selected
 }

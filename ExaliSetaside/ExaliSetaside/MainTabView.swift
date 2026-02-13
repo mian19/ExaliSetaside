@@ -2,7 +2,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @StateObject private var appState = AppState()
-    @State private var selectedTab: Tab = .add
+    @State private var selectedTab: Tab = .orders
+    @State private var hideTabBar = false
     private let debugLayoutColors = false
 
     var body: some View {
@@ -11,26 +12,35 @@ struct MainTabView: View {
 
             Group {
                 switch selectedTab {
-                case .add:
-                    CalculatorView()
                 case .orders:
-                    RecordsView()
+                    RecordsView { isVisible in
+                        hideTabBar = isVisible
+                    }
                 case .taxes:
                     HistoryView()
+                case .settings:
+                    SettingsView()
                 }
             }
             .environmentObject(appState)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            customTabBar
+            if !hideTabBar {
+                customTabBar
+            }
+        }
+        .onChange(of: selectedTab) { newTab in
+            if newTab != .orders {
+                hideTabBar = false
+            }
         }
     }
 
     private var customTabBar: some View {
         HStack(spacing: 8) {
-            tabButton(.add, titleKey: "tab.add", systemImage: "plus.circle.fill")
             tabButton(.orders, titleKey: "tab.orders", systemImage: "list.bullet.rectangle.portrait.fill")
             tabButton(.taxes, titleKey: "tab.taxes", systemImage: "banknote.fill")
+            tabButton(.settings, titleKey: "tab.settings", systemImage: "gearshape.fill")
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
@@ -68,7 +78,7 @@ struct MainTabView: View {
 }
 
 private enum Tab: Hashable {
-    case add
     case orders
     case taxes
+    case settings
 }
