@@ -1,0 +1,36 @@
+workflows:
+  name-workflow:
+    name: WorkSide
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    integrations:
+      app_store_connect: ExaliSetaside
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: ua.exali.setaside
+      vars:
+        BUNDLE_ID: "ua.exali.setaside"
+        XCODE_SCHEME: "ExaliSetaside"
+        APP_STORE_APPLE_ID: 6759175326
+      xcode: latest
+    scripts:
+      - name: Set up provisioning profiles settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Increment build number
+        script: |
+          cd $CM_BUILD_DIR
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+      - name: Build ipa for distribution
+        script: |
+          xcode-project build-ipa \
+            --project "ExaliSetaside.xcodeproj" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect: 
+        auth: integration
+        submit_to_testflight: true
+
