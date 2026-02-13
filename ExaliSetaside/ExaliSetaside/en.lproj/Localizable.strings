@@ -1,0 +1,78 @@
+"app.name" = "Exali Setaside";
+
+"onboarding.1.title" = "Track monthly income";
+"onboarding.1.subtitle" = "Capture freelance income quickly and keep tax planning simple.";
+"onboarding.2.title" = "Estimate with confidence";
+"onboarding.2.subtitle" = "Apply tax and reserve rates to avoid cash-flow surprises.";
+"onboarding.3.title" = "Never miss set-aside day";
+"onboarding.3.subtitle" = "Get a monthly reminder with the amount you should move.";
+"onboarding.mode.title" = "Primary work mode";
+"onboarding.action.next" = "Continue";
+"onboarding.action.start" = "Start";
+
+"mode.freelancer" = "Freelancer";
+"mode.selfEmployed" = "Self-Employed";
+"mode.contractor" = "Contractor";
+
+"tab.add" = "Add";
+"tab.orders" = "Orders";
+"tab.taxes" = "Taxes";
+
+"screen.add.title" = "Add & Calculate";
+"screen.orders.title" = "Orders & Payouts";
+"screen.taxes.title" = "Paid Taxes";
+
+"add.record.section" = "Add Work Record";
+"add.record.client" = "Client";
+"add.record.client.placeholder" = "Client name";
+"add.record.amount" = "Amount";
+"add.record.date" = "Work Date";
+"add.record.paid" = "Already paid";
+"add.record.action" = "Add Record";
+
+"add.calc.section" = "Current Month Calculation";
+"add.calc.ordersCount" = "Records in month";
+"add.calc.gross" = "Gross income";
+"add.calc.deductions" = "Deductions";
+
+"add.tax.section" = "Save Tax Entry";
+"add.tax.hint" = "Save this estimate to tax payment history.";
+"add.tax.action" = "Save Tax Due";
+
+"field.taxRate" = "Tax Rate";
+"field.socialRate" = "Social Contributions";
+"field.extraRate" = "Extra Reserve";
+
+"result.total" = "Tax to set aside";
+
+"orders.filter.all" = "All";
+"orders.filter.paid" = "Paid";
+"orders.filter.unpaid" = "Unpaid";
+"orders.empty" = "No order records yet.";
+"orders.untitled" = "Untitled Client";
+"orders.mark.paid" = "Mark paid";
+"orders.mark.unpaid" = "Mark unpaid";
+
+"tax.reminder.title" = "Tax Reminder";
+"tax.reminder.day" = "Reminder day";
+"tax.reminder.time" = "Reminder time";
+"tax.reminder.action" = "Set Tax Reminder";
+"tax.unpaid.title" = "Unpaid Taxes";
+"tax.paid.title" = "Paid Taxes";
+"tax.empty" = "No records.";
+"tax.markPaid" = "Mark as paid";
+"tax.paidAt" = "Paid on";
+
+"reminder.tax.title" = "Tax payment reminder";
+"reminder.tax.body %@" = "Pay %@ for taxes.";
+
+"settings.title" = "Settings";
+"settings.profile" = "Profile";
+"settings.mode" = "Taxation Mode";
+"settings.currency" = "Currency";
+"settings.defaults" = "Defaults";
+"settings.taxRate" = "Default tax rate (%)";
+"settings.extraRate" = "Default reserve (%)";
+"settings.save" = "Save Settings";
+"settings.language.note.title" = "Language";
+"settings.language.note" = "App supports English and Spanish based on system language.";

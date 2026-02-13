@@ -1,17 +1,15 @@
-//
-//  ExaliSetasideApp.swift
-//  ExaliSetaside
-//
-//  Created by mac on 12/02/2026.
-//
-
 import SwiftUI
 
 @main
 struct ExaliSetasideApp: App {
+    init() {
+        AppAppearance.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .preferredColorScheme(.dark)
         }
     }
 }

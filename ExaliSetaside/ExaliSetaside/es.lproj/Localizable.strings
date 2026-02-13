@@ -1,0 +1,78 @@
+"app.name" = "Exali Setaside";
+
+"onboarding.1.title" = "Controla ingresos mensuales";
+"onboarding.1.subtitle" = "Registra ingresos freelance rapido y simplifica tus impuestos.";
+"onboarding.2.title" = "Calcula con confianza";
+"onboarding.2.subtitle" = "Aplica tasas de impuesto y reserva para evitar sorpresas.";
+"onboarding.3.title" = "No olvides apartar";
+"onboarding.3.subtitle" = "Recibe un recordatorio mensual con el monto recomendado.";
+"onboarding.mode.title" = "Modo de trabajo principal";
+"onboarding.action.next" = "Continuar";
+"onboarding.action.start" = "Comenzar";
+
+"mode.freelancer" = "Freelancer";
+"mode.selfEmployed" = "Autonomo";
+"mode.contractor" = "Contratista";
+
+"tab.add" = "Agregar";
+"tab.orders" = "Pedidos";
+"tab.taxes" = "Impuestos";
+
+"screen.add.title" = "Agregar y Calcular";
+"screen.orders.title" = "Pedidos y Cobros";
+"screen.taxes.title" = "Impuestos Pagados";
+
+"add.record.section" = "Agregar Registro de Trabajo";
+"add.record.client" = "Cliente";
+"add.record.client.placeholder" = "Nombre del cliente";
+"add.record.amount" = "Monto";
+"add.record.date" = "Fecha de trabajo";
+"add.record.paid" = "Ya pagado";
+"add.record.action" = "Agregar Registro";
+
+"add.calc.section" = "Calculo del Mes Actual";
+"add.calc.ordersCount" = "Registros del mes";
+"add.calc.gross" = "Ingreso bruto";
+"add.calc.deductions" = "Deducciones";
+
+"add.tax.section" = "Guardar Registro Fiscal";
+"add.tax.hint" = "Guarda esta estimacion en historial de impuestos.";
+"add.tax.action" = "Guardar Impuesto";
+
+"field.taxRate" = "Tasa de Impuesto";
+"field.socialRate" = "Aportes sociales";
+"field.extraRate" = "Reserva Extra";
+
+"result.total" = "Impuesto a apartar";
+
+"orders.filter.all" = "Todos";
+"orders.filter.paid" = "Pagados";
+"orders.filter.unpaid" = "No pagados";
+"orders.empty" = "No hay registros de pedidos.";
+"orders.untitled" = "Cliente sin nombre";
+"orders.mark.paid" = "Marcar pagado";
+"orders.mark.unpaid" = "Marcar no pagado";
+
+"tax.reminder.title" = "Recordatorio de Impuestos";
+"tax.reminder.day" = "Dia de recordatorio";
+"tax.reminder.time" = "Hora de recordatorio";
+"tax.reminder.action" = "Crear Recordatorio";
+"tax.unpaid.title" = "Impuestos No Pagados";
+"tax.paid.title" = "Impuestos Pagados";
+"tax.empty" = "Sin registros.";
+"tax.markPaid" = "Marcar como pagado";
+"tax.paidAt" = "Pagado el";
+
+"reminder.tax.title" = "Recordatorio de impuesto";
+"reminder.tax.body %@" = "Paga %@ de impuestos.";
+
+"settings.title" = "Ajustes";
+"settings.profile" = "Perfil";
+"settings.mode" = "Modo Fiscal";
+"settings.currency" = "Moneda";
+"settings.defaults" = "Valores por Defecto";
+"settings.taxRate" = "Impuesto por defecto (%)";
+"settings.extraRate" = "Reserva por defecto (%)";
+"settings.save" = "Guardar Ajustes";
+"settings.language.note.title" = "Idioma";
+"settings.language.note" = "La app soporta ingles y espanol segun el idioma del sistema.";
