@@ -14,11 +14,29 @@ struct SettingsView: View {
     @State private var defaultReserveRate = ""
     @State private var reminderDay = 10
     @State private var reminderTime = Date()
+    @State private var savedDefaultTaxRate = 0.0
+    @State private var savedDefaultReserveRate = 0.0
+    @State private var savedReminderDay = 10
+    @State private var savedReminderHour = 9
+    @State private var savedReminderMinute = 0
 
     @FocusState private var focusedField: Field?
+    private let inactiveButtonOpacity = 0.45
 
     private enum Field: Hashable {
         case taxRate, reserveRate
+    }
+
+    private var taxSettingsDirty: Bool {
+        abs(parse(defaultTaxRate) / 100 - savedDefaultTaxRate) > 0.0001 ||
+        abs(parse(defaultReserveRate) / 100 - savedDefaultReserveRate) > 0.0001
+    }
+
+    private var reminderDirty: Bool {
+        let current = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+        return reminderDay != savedReminderDay ||
+            (current.hour ?? 0) != savedReminderHour ||
+            (current.minute ?? 0) != savedReminderMinute
     }
 
     private var nextAmount: Double {
@@ -52,14 +70,7 @@ struct SettingsView: View {
             .toolbarBackground(Theme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .onAppear {
-                defaultTaxRate = stripTrailingZeros(appState.profile.defaultTaxRate * 100)
-                defaultReserveRate = stripTrailingZeros(appState.profile.defaultReserveExtraRate * 100)
-                reminderDay = UserDefaults.standard.integer(forKey: "reminderDay")
-                if reminderDay == 0 { reminderDay = 10 }
-                let savedTime = UserDefaults.standard.double(forKey: "reminderTime")
-                if savedTime > 0 {
-                    reminderTime = Date(timeIntervalSince1970: savedTime)
-                }
+                loadSettingsState()
             }
             .onChange(of: appState.profile.taxationMode) { _ in
                 appState.saveProfile()
@@ -119,6 +130,8 @@ struct SettingsView: View {
             .padding(.vertical, 14)
             .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .foregroundStyle(Color.black)
+            .opacity(taxSettingsDirty ? 1 : inactiveButtonOpacity)
+            .disabled(!taxSettingsDirty)
         }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -163,23 +176,38 @@ struct SettingsView: View {
 
             Button("tax.reminder.action") {
                 let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
+                let hour = components.hour ?? 9
+                let minute = components.minute ?? 0
                 UserDefaults.standard.set(reminderDay, forKey: "reminderDay")
+                UserDefaults.standard.set(hour, forKey: "reminderHour")
+                UserDefaults.standard.set(minute, forKey: "reminderMinute")
                 UserDefaults.standard.set(reminderTime.timeIntervalSince1970, forKey: "reminderTime")
                 Task {
                     await appState.scheduleTaxReminder(
                         amount: nextAmount,
                         currencyCode: appState.profile.currencyCode,
                         day: reminderDay,
-                        hour: components.hour ?? 9,
-                        minute: components.minute ?? 0
+                        hour: hour,
+                        minute: minute
                     )
                 }
+                savedReminderDay = reminderDay
+                savedReminderHour = hour
+                savedReminderMinute = minute
+                reminderTime = Calendar.current.date(
+                    bySettingHour: savedReminderHour,
+                    minute: savedReminderMinute,
+                    second: 0,
+                    of: Date()
+                ) ?? reminderTime
             }
             .font(.system(size: 15, weight: .bold))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(Theme.gradient, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .foregroundStyle(Color.black)
+            .opacity(reminderDirty ? 1 : inactiveButtonOpacity)
+            .disabled(!reminderDirty)
         }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -218,11 +246,57 @@ struct SettingsView: View {
     }
 
     private func saveTaxDefaults() {
-        appState.profile.defaultTaxRate = max(0, parse(defaultTaxRate) / 100)
-        appState.profile.defaultReserveExtraRate = max(0, parse(defaultReserveRate) / 100)
+        let tax = max(0, parse(defaultTaxRate) / 100)
+        let reserve = max(0, parse(defaultReserveRate) / 100)
+        appState.profile.defaultTaxRate = tax
+        appState.profile.defaultReserveExtraRate = reserve
         appState.saveProfile()
+        savedDefaultTaxRate = tax
+        savedDefaultReserveRate = reserve
+        defaultTaxRate = stripTrailingZeros(tax * 100)
+        defaultReserveRate = stripTrailingZeros(reserve * 100)
         focusedField = nil
         hideKeyboard()
+    }
+
+    private func loadSettingsState() {
+        savedDefaultTaxRate = appState.profile.defaultTaxRate
+        savedDefaultReserveRate = appState.profile.defaultReserveExtraRate
+        defaultTaxRate = stripTrailingZeros(savedDefaultTaxRate * 100)
+        defaultReserveRate = stripTrailingZeros(savedDefaultReserveRate * 100)
+
+        let storedDay = UserDefaults.standard.integer(forKey: "reminderDay")
+        savedReminderDay = storedDay == 0 ? 10 : storedDay
+        reminderDay = savedReminderDay
+
+        let storedHour = UserDefaults.standard.object(forKey: "reminderHour") as? Int
+        let storedMinute = UserDefaults.standard.object(forKey: "reminderMinute") as? Int
+        if let hour = storedHour, let minute = storedMinute {
+            savedReminderHour = min(max(hour, 0), 23)
+            savedReminderMinute = min(max(minute, 0), 59)
+        } else {
+            let legacy = UserDefaults.standard.double(forKey: "reminderTime")
+            if legacy > 0 {
+                let legacyDate = Date(timeIntervalSince1970: legacy)
+                let legacyComponents = Calendar.current.dateComponents([.hour, .minute], from: legacyDate)
+                savedReminderHour = legacyComponents.hour ?? 9
+                savedReminderMinute = legacyComponents.minute ?? 0
+                UserDefaults.standard.set(savedReminderHour, forKey: "reminderHour")
+                UserDefaults.standard.set(savedReminderMinute, forKey: "reminderMinute")
+            } else {
+                savedReminderHour = 9
+                savedReminderMinute = 0
+                UserDefaults.standard.set(savedReminderHour, forKey: "reminderHour")
+                UserDefaults.standard.set(savedReminderMinute, forKey: "reminderMinute")
+            }
+        }
+
+        reminderTime = Calendar.current.date(
+            bySettingHour: savedReminderHour,
+            minute: savedReminderMinute,
+            second: 0,
+            of: Date()
+        ) ?? Date()
     }
 
     private func stripTrailingZeros(_ number: Double) -> String {
