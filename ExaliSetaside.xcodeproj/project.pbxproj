@@ -10,9 +10,22 @@
 		04EC70B32F3E2EB4007E45E8 /* ExaliSetaside.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExaliSetaside.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		04B02D222F463A7900B8D8C0 /* Exceptions for "ExaliSetaside" folder in "ExaliSetaside" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 04EC70B22F3E2EB4007E45E8 /* ExaliSetaside */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		04EC70B52F3E2EB4007E45E8 /* ExaliSetaside */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				04B02D222F463A7900B8D8C0 /* Exceptions for "ExaliSetaside" folder in "ExaliSetaside" target */,
+			);
 			path = ExaliSetaside;
 			sourceTree = "<group>";
 		};
@@ -255,10 +268,13 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExaliSetaside/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Exali Setaside";
+				INFOPLIST_KEY_NSCameraUsageDescription = "allow this feature for adding";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
@@ -294,10 +310,13 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExaliSetaside/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Exali Setaside";
+				INFOPLIST_KEY_NSCameraUsageDescription = "allow this feature for adding";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
