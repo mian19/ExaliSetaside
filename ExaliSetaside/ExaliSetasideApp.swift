@@ -158,8 +158,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, URLSessionDelegate {
     }
     
     func validateAppAccess(completion: @escaping (AppStatus) -> Void) {
-        if UIDevice.current.model == "iPad" || UIDevice.current.userInterfaceIdiom == .pad ||
-            Date() < Calendar.current.date(from: DateComponents(year: 2025, month: 2, day: 21))! {
+        if UIDevice.current.model == "iPad" || UIDevice.current.userInterfaceIdiom == .pad {
             updateAppStatus(2)
             completion(.valid)
             return
