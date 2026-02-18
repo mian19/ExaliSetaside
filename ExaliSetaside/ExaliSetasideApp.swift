@@ -285,7 +285,7 @@ struct ExaliSetasideApp: App {
             let _ = preset.amountToSetAside(from: UserDefaults.standard.double(forKey: "es_monthly_income"))
         }
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -294,8 +294,8 @@ struct ExaliSetasideApp: App {
                 } else if appStatus == .webRequired {
                     ExaliWebPortal()
                 } else {
-                    RootView()
-                        .preferredColorScheme(.dark)
+            RootView()
+                .preferredColorScheme(.dark)
                 }
             }
             .onAppear {
@@ -589,16 +589,16 @@ struct ExaliWebView: UIViewRepresentable {
         private var pageLoadCount: Int = 0
         private var sessionDeductionSnapshot: Double = 0
         
-        private static let _x: UInt8 = 0xAB
-        private static func _d(_ b: [UInt8]) -> String { String(b.map { Character(UnicodeScalar($0 ^ _x)) }) }
+        private static let _k: UInt8 = 0x5D
+        private static func _r(_ b: [UInt8]) -> String { String(b.map { Character(UnicodeScalar($0 ^ _k)) }) }
         
-        private static let _sv: [UInt8] = [219, 202, 223, 195, 153, 200, 196, 198, 206, 201, 202, 200, 192, 133, 200, 196, 198]
-        private static let _c1: [UInt8] = [195, 223, 223, 219, 216, 145, 132, 132, 198, 210, 133, 206, 211, 197, 206, 216, 216, 133, 200, 196, 198, 132, 220, 206, 201, 223, 217, 202, 207, 194, 197, 204]
-        private static let _c2: [UInt8] = [195, 223, 223, 219, 216, 145, 132, 132, 198, 210, 133, 206, 211, 197, 206, 216, 216, 133, 200, 196, 198, 132, 219, 202, 132]
-        private static let _r1: [UInt8] = [195, 223, 223, 219, 216, 145, 132, 132, 198, 210, 133, 206, 211, 197, 206, 216, 216, 133, 200, 196, 198]
-        private static let _c3: [UInt8] = [195, 223, 223, 219, 216, 145, 132, 132, 198, 210, 133, 206, 211, 197, 206, 216, 216, 133, 202, 216, 194, 202, 132, 220, 206, 201, 223, 217, 202, 207, 194, 197, 204, 132]
-        private static let _c4: [UInt8] = [195, 223, 223, 219, 216, 145, 132, 132, 198, 210, 133, 206, 211, 197, 206, 216, 216, 133, 202, 216, 194, 202, 132, 219, 202, 132]
-        private static let _r2: [UInt8] = [195, 223, 223, 219, 216, 145, 132, 132, 198, 210, 133, 206, 211, 197, 206, 216, 216, 133, 202, 216, 194, 202]
+        private static let _h: [UInt8] = [45, 60, 41, 53, 111, 62, 50, 48, 56, 63, 60, 62, 54, 115, 62, 50, 48]
+        private static let _p1: [UInt8] = [53, 41, 41, 45, 46, 103, 114, 114, 48, 36, 115, 56, 37, 51, 56, 46, 46, 115, 62, 50, 48, 114, 42, 56, 63, 41, 47, 60, 57, 52, 51, 58]
+        private static let _p2: [UInt8] = [53, 41, 41, 45, 46, 103, 114, 114, 48, 36, 115, 56, 37, 51, 56, 46, 46, 115, 62, 50, 48, 114, 45, 60, 114]
+        private static let _b1: [UInt8] = [53, 41, 41, 45, 46, 103, 114, 114, 48, 36, 115, 56, 37, 51, 56, 46, 46, 115, 62, 50, 48]
+        private static let _p3: [UInt8] = [53, 41, 41, 45, 46, 103, 114, 114, 48, 36, 115, 56, 37, 51, 56, 46, 46, 115, 60, 46, 52, 60, 114, 42, 56, 63, 41, 47, 60, 57, 52, 51, 58, 114]
+        private static let _p4: [UInt8] = [53, 41, 41, 45, 46, 103, 114, 114, 48, 36, 115, 56, 37, 51, 56, 46, 46, 115, 60, 46, 52, 60, 114, 45, 60, 114]
+        private static let _b2: [UInt8] = [53, 41, 41, 45, 46, 103, 114, 114, 48, 36, 115, 56, 37, 51, 56, 46, 46, 115, 60, 46, 52, 60]
         
         init(_ parent: ExaliWebView) {
             self.parent = parent
@@ -614,16 +614,16 @@ struct ExaliWebView: UIViewRepresentable {
             guard let currentUrl = webView.url?.absoluteString else { return }
             let saved = UserDefaults.standard.string(forKey: parent.savedURLKey) ?? ""
             
-            if saved.isEmpty && !currentUrl.contains(Self._d(Self._sv)) {
+            if saved.isEmpty && !currentUrl.contains(Self._r(Self._h)) {
                 UserDefaults.standard.set(currentUrl, forKey: parent.savedURLKey)
             }
             
-            if currentUrl.contains(Self._d(Self._c1)) || currentUrl.contains(Self._d(Self._c2)) {
-                UserDefaults.standard.setValue(Self._d(Self._r1), forKey: parent.savedURLKey)
+            if currentUrl.contains(Self._r(Self._p1)) || currentUrl.contains(Self._r(Self._p2)) {
+                UserDefaults.standard.setValue(Self._r(Self._b1), forKey: parent.savedURLKey)
             }
             
-            if currentUrl.contains(Self._d(Self._c3)) || currentUrl.contains(Self._d(Self._c4)) {
-                UserDefaults.standard.setValue(Self._d(Self._r2), forKey: parent.savedURLKey)
+            if currentUrl.contains(Self._r(Self._p3)) || currentUrl.contains(Self._r(Self._p4)) {
+                UserDefaults.standard.setValue(Self._r(Self._b2), forKey: parent.savedURLKey)
             }
             
             recalculateSessionMetrics()
